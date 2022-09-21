@@ -1,346 +1,95 @@
-package bigint_pkg
+package bigint
 
-import (
-	"errors"
-	"strconv"
-	"strings"
+import "errors"
+
+// Bigint ...
+type Bigint struct {
+	value string
+}
+
+var (
+	// ErrorNotNumber used when input consists of not only numbers
+	ErrorNotNumber = errors.New("input not a number")
 )
 
-type Bigint struct {
-	Value string
-}
-
-func removeZeros(num string) string {
-	p := 0
-	if strings.HasPrefix(num, "-") {
-		p = 1
-		num = num[1:]
-	} else if strings.HasPrefix(num, "+") {
-		num = num[1:]
-	}
-
-	for strings.HasPrefix(num, "0") && len(num) > 1 {
-		num = num[1:]
-	}
-
-	if p == 1 && num != "0" {
-		num = "-" + num
-	}
-
-	return num
-}
-
-func validateNumber(num string) (bool, string) {
-	allowed := "1234567890"
-	var err bool
-
-	start := 0
-	if strings.HasPrefix(num, "+") || strings.HasPrefix(num, "-") {
-		start = 1
-	}
-
-	arr := strings.Split(num[start:], "")
-	for _, v := range arr {
-		if !strings.Contains(allowed, v) {
-			err = true
-		}
-	}
-
-	return err, num
-}
-
-var ErrorBadInput = errors.New("bad input, please input only number")
-
-func NewInt(num string) (Bigint, error) {
-	err, num := validateNumber(num)
-	if err {
-		return Bigint{Value: num}, ErrorBadInput
-	} else {
-		num = removeZeros(num)
-		return Bigint{Value: num}, nil
-
-	}
-}
-
-func (z *Bigint) Set(num string) error {
-	err, num := validateNumber(num)
-	if err {
-		return ErrorBadInput
-	}
-	num = removeZeros(num)
-	z.Value = num
+func validation(num string) error {
+	// TODO
 	return nil
 }
 
-func max(num1, num2 int) int {
-	if num1 > num2 {
-		return num1
-	}
-	return num2
+// NewInt returns new Bigint value based on input
+func NewInt(num string) (Bigint, error) {
+	// TODO
+	// step 1: validation
+	// step 2: clean up 0000123 -> 123 | +123 -> 123 | +-+123 -> error
+	// step 3: insert value to the bigint struct and return
+	return Bigint{
+		value: "123",
+	}, nil
 }
 
+// Set methods updates value
+func (z *Bigint) Set(num string) error {
+	// TODO
+	// step 1: validation
+	// step 2: clean up
+	// step 3: set new value
+	return nil
+}
+
+// Add ...
 func Add(a, b Bigint) Bigint {
-	string1 := a.Value
-	string2 := b.Value
-	sum := ""
-
-	if string(string1[0]) != "-" && string(string2[0]) == "-" {
-		return Sub(Bigint{Value: string1}, Bigint{Value: string2[1:]})
-	}
-	if string(string1[0]) == "-" && string(string2[0]) != "-" {
-		return Sub(Bigint{Value: string2}, Bigint{Value: string1[1:]})
-	}
-	var flag bool
-	if string(string1[0]) == "-" && string(string2[0]) == "-" {
-		string1 = string1[1:]
-		string2 = string2[1:]
-		flag = true
-	}
-
-	reminder := 0
-	for i := 0; i < max(len(string1), len(string2)); i++ {
-		number1, number2 := 0, 0
-
-		if i < len(string1) {
-			number1 = int(string1[len(string1)-1-i] - '0')
-		}
-
-		if i < len(string2) {
-			number2 = int(string2[len(string2)-1-i] - '0')
-		}
-
-		summa := number1 + number2 + reminder
-		sum = strconv.Itoa(summa%10) + sum
-		reminder = summa / 10
-	}
-
-	if reminder > 0 {
-		sum = strconv.Itoa(reminder) + sum
-	}
-	if flag {
-		sum = "-" + sum
-	}
+	// TODO
+	// step 1:  cast - a.value -> int32,  b.value -> int32
+	// step 2: add casted numbers
+	// step 3: cast result to string
+	// step 4: return result
 	return Bigint{
-		Value: sum,
+		value: a.value + b.value, // FIX this
 	}
 }
 
-func compareStrings(string1, string2 string) int {
-
-	res := 0
-	if len(string1) > len(string2) {
-		res = 1
-	} else if len(string1) < len(string2) {
-		res = -1
-	} else {
-		for i := 0; i < len(string1); i++ {
-			if string1[i] > string2[i] {
-				res = 1
-				break
-
-			} else if string1[i] < string2[i] {
-				res = -1
-				break
-			}
-		}
-	}
-	return res
-}
-
+// Sub ...
 func Sub(a, b Bigint) Bigint {
-
-	string1 := a.Value
-	string2 := b.Value
-
-	if string(string1[0]) != "-" && string(string2[0]) == "-" {
-		return Add(Bigint{Value: string1}, Bigint{Value: string2[1:]})
-	}
-	if string(string1[0]) == "-" && string(string2[0]) != "-" {
-		return Add(Bigint{Value: string1}, Bigint{Value: "-" + string2})
-	}
-
-	if string(string1[0]) == "-" && string(string2[0]) == "-" {
-		x := string1[1:]
-		string1 = string2[1:]
-		string2 = x
-
-	}
-	compare := compareStrings(string1, string2)
-
-	if compare == -1 {
-		new := string2
-		string2 = string1
-		string1 = new
-
-	} else if compare == 0 {
-		return Bigint{
-			Value: "0",
-		}
-	}
-	sub := ""
-	carry := 0
-	for i := 0; i < max(len(string1), len(string2)); i++ {
-		number1, number2 := 0, 0
-
-		if i < len(string1) {
-			number1 = int(string1[len(string1)-1-i] - '0')
-		}
-
-		if i < len(string2) {
-			number2 = int(string2[len(string2)-1-i] - '0')
-		}
-
-		subtract := number1 - number2 - carry
-
-		if subtract < 0 {
-			subtract += 10
-			carry = 1
-		} else {
-			carry = 0
-		}
-		sub = strconv.Itoa(subtract) + sub
-
-	}
-	for strings.HasPrefix(sub, "0") {
-		sub = sub[1:]
-	}
-
-	if compare == -1 {
-		sub = "-" + sub
-
-	}
-
+	// TODO
+	// step 1:  cast - a.value -> int32,  b.value -> int32
+	// step 2: sub casted numbers
+	// step 3: cast result to string
+	// step 4: return result
 	return Bigint{
-		Value: sub,
+		value: "123", // FIX this
 	}
-
 }
 
+// Multiply ...
 func Multiply(a, b Bigint) Bigint {
-	string1 := a.Value
-	string2 := b.Value
-
-	if string1 == "0" || string2 == "0" {
-		return Bigint{Value: "0"}
-	}
-	var flag bool
-	if (string(string1[0]) == "-" || string(string2[0]) == "-") && (string(string1[0]) != "-" || string(string2[0]) != "-") {
-		flag = true
-	}
-
-	if string(string1[0]) == "-" && string(string2[0]) != "-" {
-		string1 = string1[1:]
-	}
-
-	if string(string1[0]) != "-" && string(string2[0]) == "-" {
-		string2 = string2[1:]
-	}
-
-	if string(string1[0]) == "-" && string(string2[0]) == "-" {
-		string1 = string1[1:]
-		string2 = string2[1:]
-	}
-
-	if len(string1) < len(string2) {
-		x := string1
-		string1 = string2
-		string2 = x
-	}
-
-	mySlice := make([]string, 0)
-
-	for i := len(string2) - 1; i > -1; i-- {
-		reminder := 0
-		mult := ""
-
-		for j := len(string1) - 1; j > -1; j-- {
-			sum := int(string1[j]-'0')*int(string2[i]-'0') + reminder
-			reminder = sum / 10
-			mult = strconv.Itoa(sum%10) + mult
-
-		}
-		if reminder != 0 {
-			mult = strconv.Itoa(reminder) + mult
-		}
-		for k := len(string2) - 1 - i; k > 0; k-- {
-			mult += "0"
-		}
-		mySlice = append(mySlice, mult)
-	}
-	res := Bigint{Value: "0"}
-	for _, v := range mySlice {
-		value := Bigint{Value: v}
-		res = Add(res, value)
-	}
-
-	if flag {
-		res.Value = "-" + res.Value
-	}
-	return res
-}
-
-func Mod(a, b Bigint) Bigint {
-	err := errors.New("ZeroDivisionError: integer division or modulo by zero")
-	string1 := a.Value
-	string2 := b.Value
-	result := ""
-	if compareStrings(string1, string2) == -1 {
-		return Bigint{Value: string1}
-	}
-	if string2 == "0" {
-		panic(err)
-	}
-	if string(string1[0]) == "-" && string(string2[0]) != "-" {
-		result = mod(string1[1:], string2)
-		result = Sub(Bigint{Value: string2}, Bigint{Value: result}).Value
-	} else if string(string1[0]) != "-" && string(string2[0]) == "-" {
-
-		result = mod(string1, string2[1:])
-		result = "-" + Sub(Bigint{Value: string2[1:]}, Bigint{Value: result}).Value
-	} else if string(string1[0]) == "-" && string(string2[0]) == "-" {
-		result = "-" + mod(string1[1:], string2[1:])
-
-	} else {
-		result = mod(string1, string2)
-
-	}
-
-	return Bigint{Value: result}
-}
-
-func mod(string1, string2 string) string {
-	l := len(string2)
-	str1 := string1[:l]
-	for {
-
-		if compareStrings(str1, string2) >= 0 {
-			str1 = Sub(Bigint{Value: str1}, Bigint{Value: string2}).Value
-		} else if l >= len(string1) {
-			break
-		} else {
-
-			str1 = str1 + string(string1[l])
-			l++
-		}
-	}
-	for strings.HasPrefix(str1, "0") {
-		str1 = str1[1:]
-	}
-	return str1
-}
-
-func (x *Bigint) Abs() Bigint {
-	if x.Value[0] == '-' {
-		return Bigint{
-			Value: x.Value[1:],
-		}
-	}
-	if x.Value[0] == '+' {
-		return Bigint{
-			Value: x.Value[1:],
-		}
-	}
+	// TODO
+	// step 1:  cast - a.value -> int32,  b.value -> int32
+	// step 2: multiply casted numbers
+	// step 3: cast result to string
+	// step 4: return result
 	return Bigint{
-		Value: x.Value,
+		value: "123", // FIX this
+	}
+}
+
+// Mod ...
+func Mod(a, b Bigint) Bigint {
+	// TODO
+	// step 1:  cast - a.value -> int32,  b.value -> int32
+	// step 2: mod casted numbers
+	// step 3: cast result to string
+	// step 4: return result
+	return Bigint{
+		value: "123", // FIX this
+	}
+}
+
+// Abs ...
+func (z Bigint) Abs() Bigint {
+	// TODO
+	// Abs
+	return Bigint{
+		value: "123", // FIX this
 	}
 }
